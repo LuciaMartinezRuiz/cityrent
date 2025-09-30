@@ -18,4 +18,7 @@ app.layout = dbc.Container(
 )
 
 if __name__ == "__main__":
-    app.run_server(host="0.0.0.0", port=8050, debug=True)
+    import os
+    port = int(os.environ.get("PORT", 8050))
+    # Dash >= 2.16 usa app.run en lugar de app.run_server
+    app.run(host="127.0.0.1", port=port, debug=True)
