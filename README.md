@@ -1,52 +1,57 @@
-# CityRent – Precios Airbnb y seguridad urbana
+# CityRent – Airbnb Prices and Urban Safety
 
-## Título del proyecto
+## Project Title
 CityRent
 
-## Breve descripción del problema a resolver
-El acceso a la vivienda y la variabilidad de precios del alquiler turístico (Airbnb) entre barrios y ciudades generan incertidumbre para residentes, visitantes y administraciones. Actualmente, la información se encuentra dispersa en múltiples fuentes y rara vez permite analizar de forma conjunta el precio del alojamiento con indicadores de seguridad o contexto socioeconómico. **CityRent** propone una aplicación web interactiva que unifica estas fuentes para explorar patrones, comparar zonas y entender qué factores se relacionan con el precio por noche.
+## Short Description of the Problem
+Access to housing and the variability of short-term rental (Airbnb) prices across neighborhoods and cities create uncertainty for residents, visitors, and local authorities. Today, information is scattered across multiple sources and rarely allows joint analysis of lodging price with safety or socioeconomic indicators. CityRent proposes an interactive web application that unifies these sources to explore patterns, compare areas, and understand which factors are associated with nightly price.
 
-## Objetivos principales
-1. **Visualizar** precios medios y distribución del alquiler turístico por **ciudad y barrio** sobre mapas interactivos y gráficos.
-2. **Integrar** datos de vivienda (Airbnb) con **delincuencia** y variables **socioeconómicas** (p. ej., renta, densidad) para análisis conjunto.
-3. **Modelar** relaciones mediante **regresión múltiple** y ofrecer explicabilidad básica de variables.
-4. **Desplegar** una **URL pública** estable con CI/CD y mantener mejoras continuas durante el semestre.
+## Main Objectives
+1. Visualize average prices and distribution of short-term rentals by city and neighborhood with interactive maps and charts.  
+2. Integrate housing (Airbnb) data with crime and socioeconomic variables (e.g., income, density) for combined analysis.  
+3. Model relationships using multiple regression and provide basic explainability of variables.  
+4. Deploy a stable public URL with CI/CD and maintain continuous improvements throughout the semester.
 
-## Plan inicial de trabajo (fases, tareas previstas)
-- **Fase 1 – Repo & Despliegue Base (Semana 0-1)**  
-  Crear repositorio `cityrent`, esqueleto Dash multipágina, estilos básicos y despliegue “Hello CityRent”.
-- **Fase 2 – Datos & Geometrías (Semana 1-3)**  
-  Ingesta y limpieza de **Inside Airbnb** (listings) + índices de **delincuencia** y variables socioeconómicas (INE/ayuntamientos). Preparación de **GeoJSON** de barrios/ciudades.
-- **Fase 3 – Visualizaciones base (Semana 3-4)**  
-  Mapa choropleth por barrio/ciudad, histogramas/boxplots de precios y tabla filtrable de propiedades.
-- **Fase 4 – Modelo & Relaciones (Semana 4-6)**  
-  Regresión múltiple (scikit-learn) con métricas (R², MAE) y visualización de importancia de variables. Vista “Relaciones” (scatter + línea de ajuste).
-- **Fase 5 – UX & Utilidad (Semana 6-7)**  
-  Filtros avanzados (rango de precio, tipo de alojamiento, nº habitaciones, rating), descargas CSV y página “Metodología & Datos”.
-- **Fase 6 – Calidad & Rendimiento (Semana 7-8)**  
-  Tests básicos, caché de consultas/preagregados y automatización de despliegue (GitHub Actions).
+## Initial Work Plan (phases & tasks)
+### Phase 1 – Repo & Base Deployment (Week 0–1)
+Create the `cityrent` repository, multi-page Dash skeleton, basic styling, and “Hello CityRent” deployment.
 
-## Fuentes de datos previstas (no exhaustivo)
-- Inside Airbnb (listings y coordenadas por ciudad).  
-- Portales de datos abiertos municipales (delincuencia por distrito/barrio).  
-- INE / Eurostat (variables socioeconómicas).
+### Phase 2 – Data & Geometries (Week 1–3)
+Ingest and clean Inside Airbnb (listings) plus crime indices and socioeconomic variables (INE/municipal portals). Prepare GeoJSON for neighborhoods/cities.
 
-## Estructura del repositorio
+### Phase 3 – Core Visualizations (Week 3–4)
+Neighborhood/city choropleth map, price histograms/boxplots, and a filterable property table.
+
+### Phase 4 – Modeling & Relations (Week 4–6)
+Multiple regression (scikit-learn) with metrics (R², MAE) and variable-importance visualization. “Relations” view (scatter plus fitted line).
+
+### Phase 5 – UX & Utility (Week 6–7)
+Advanced filters (price range, listing type, bedrooms, rating), CSV downloads, and a “Methodology & Data” page.
+
+### Phase 6 – Quality & Performance (Week 7–8)
+Basic tests, cached queries/pre-aggregations, and CI/CD automation (GitHub Actions).
+
+## Planned Data Sources (non-exhaustive)
+- Inside Airbnb (listings and coordinates by city)  
+- Municipal open data portals (crime by district/neighborhood)  
+- INE / Eurostat (socioeconomic variables)
+
+## Repository Structure
 ```
 cityrent/
   app/
     pages/
-      home.py            # mapa ciudades
-      neighborhoods.py   # detalle barrios + lista propiedades
-      relations.py       # regresión y correlaciones
-      about.py           # metodología y fuentes
-    app.py               # punto de entrada
+      home.py            # city map
+      neighborhoods.py   # neighborhood details + property list
+      relations.py       # regression & correlations
+      about.py           # methodology & sources
+    app.py               # entry point
     __init__.py
   assets/
     styles.css
   data/
-    raw/                 # CSV originales
-    processed/           # parquet/CSV limpios
+    raw/                 # original CSVs
+    processed/           # cleaned parquet/CSV
   models/
     train_regression.py
     artifacts/
@@ -62,17 +67,14 @@ cityrent/
   README.md
 ```
 
-## Cómo ejecutar en local
+## How to Run Locally
 ```bash
 pip install -r requirements.txt
 python app/app.py
-# Abrir http://127.0.0.1:8050
+# Open http://127.0.0.1:8050
 ```
 
-## Despliegue (sugerido)
-- Render / Railway / Fly.io con Docker.  
-- Variables de entorno para claves de APIs si aplican.  
-- CI/CD con GitHub Actions (build & deploy automático en main).
-
----
-> Nota: Cambia `tuusuario` cuando crees el repo en GitHub: `https://github.com/tuusuario/cityrent`.
+## Deployment (suggested)
+- Render / Railway / Fly.io with Docker.  
+- Environment variables for API keys if applicable.  
+- CI/CD via GitHub Actions (auto build and deploy on main).
