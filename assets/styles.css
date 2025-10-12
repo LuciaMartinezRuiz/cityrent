@@ -1,1 +1,12 @@
 :root { --brand: #111827; } h2 { color: var(--brand); }
+
+/* Altura máxima razonable del menú del Dropdown y scroll */
+.Select-menu-outer, .Select-menu-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* Por si algo lo tapa, se eleva el menú */
+.Select-menu-outer {
+  z-index: 9999;
+}
