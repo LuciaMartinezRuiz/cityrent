@@ -59,4 +59,6 @@ app.layout = html.Div(
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 8050))
-    app.run(host="127.0.0.1", port=port, debug=True)
+    debug = os.environ.get("DEBUG", "1") == "1"  # DEBUG=1 por defecto en local
+    app.run(host="0.0.0.0", port=port, debug=debug) # debug en local, no en producción
+
