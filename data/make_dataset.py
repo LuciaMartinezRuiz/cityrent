@@ -37,24 +37,22 @@ df["neigh"] = df["neighbourhood"]
 df["district"] = df["neighbourhood_group"] if "neighbourhood_group" in df.columns else pd.NA
 
 
-# --- LIMPIEZA PRECIO ROBUSTA ---
-# "$123.00", "€99", "  " → 123.0, 99.0, NaN
+# limpiar precio
 price_str = (
     df["price"]
     .astype(str)
-    .str.replace(r"[^0-9.,]", "", regex=True)  # quita símbolos
-    .str.replace(",", ".", regex=False)        # coma → punto
+    .str.replace(r"[^0-9.,]", "", regex=True) # quita símbolos
+    .str.replace(",", ".", regex=False) # coma a punto
     .str.strip()
-    .replace({"": None})                       # vacío → None
+    .replace({"": None}) # cadenas vacías a None
 )
 
 df["price"] = pd.to_numeric(price_str, errors="coerce")  # convierte y deja NaN si no se puede
 
-# --- FILTRO RAZONABLE DE PRECIOS---
+# filtro de precios extremos
 MIN_PRICE, MAX_PRICE = 15, 500
 df = df[(df["price"] >= MIN_PRICE) & (df["price"] <= MAX_PRICE)].copy()
 print("DEBUG price range =>", float(df["price"].min()), float(df["price"].max()))
-
 
 
 # quitar anuncios sin coordenadas válidas

@@ -8,24 +8,25 @@ from pathlib import Path
 
 dash.register_page(__name__, path="/", name="Inicio")
 
-# rutas/datos
+# datos
 PROC = Path("data/processed")
 GEO = Path("geo")
 CITY = "madrid"
 
 listings_all = pd.read_parquet(PROC / f"{CITY}_listings.parquet")
 
-# rango de precio disponible tras tu limpieza
+# rango de precio disponible
 MIN_P = int(listings_all["price"].min())
 MAX_P = int(listings_all["price"].max())
 
-ROOM_TYPES = sorted(listings_all["room_type"].dropna().unique().tolist())
-
+# eliminar NaNs
+ROOM_TYPES = sorted(listings_all["room_type"].dropna().unique().tolist()) 
 with open(GEO / "neighbourhoods.geojson", "r", encoding="utf-8") as f:
     GJ = json.load(f)
 
-# ---------- utilidades ----------
+# -------------------- funciones --------------------
 def subset(room_types, price_range):
+    """Subset según filtros."""
     lo, hi = price_range
     return listings_all[
         listings_all["room_type"].isin(room_types)
@@ -33,7 +34,7 @@ def subset(room_types, price_range):
     ].copy()
 
 def make_map(df_subset: pd.DataFrame) -> go.Figure:
-    """Choropleth por barrio con media de precios del subset filtrado."""
+    """Mapa por barrio según media de precios."""
     fig = go.Figure()
     if not df_subset.empty:
         agg = (
@@ -69,7 +70,7 @@ def make_map(df_subset: pd.DataFrame) -> go.Figure:
     )
     return fig
 
-# ---------- layout ----------
+# -------------------- Layout --------------------
 layout = html.Div(
     [
         html.H2("Madrid"),
@@ -126,8 +127,8 @@ layout = html.Div(
             },
         ),
 
-        # header + controles del ranking
-        html.H3("Comparativa de precios por barrio", style={"marginTop": "8px"}),
+        # header y controles del ranking
+        html.H4("Comparativa de precios por barrio", style={"marginTop": "8px"}),
         html.Div(
             [
                 html.Label("Métrica"),
@@ -160,7 +161,7 @@ layout = html.Div(
     ]
 )
 
-# ---------- callbacks ----------
+# -------------------- Callbacks --------------------
 @dash.callback(
     Output("map-agg", "figure"),
     Output("kpi-row", "children"),
@@ -171,7 +172,7 @@ layout = html.Div(
     Input("order-dd", "value"),
 )
 def update_all(room_types, price_range, metric, order_dir):
-    # subset filtrado
+    """Actualizar visualizaciones según filtros."""
     d = subset(room_types, price_range)
 
     # KPIs
@@ -208,19 +209,20 @@ def update_all(room_types, price_range, metric, order_dir):
         .rename(columns={"neigh": "neighbourhood"})
     )
 
-    # top/bottom segun métrica
+    # top o bottom segun métrica
     ascending = (order_dir == "asc")
     top = agg.sort_values(metric, ascending=ascending).head(15)
     top = top.sort_values(metric, ascending=True)  # para que crezca de abajo arriba
 
-    # cambio de color
-    nice_color = "#6BB9CC"  
+    # color
+    color = "#6BB9CC"  
 
+    # gráfico de barras
     fig_bar = px.bar(
         top, x=metric, y="neighbourhood", orientation="h",
         labels={"neighbourhood": "Barrio", metric: "Valor"},
         text=top[metric].round(0),
-        color_discrete_sequence=[nice_color],
+        color_discrete_sequence=[color],
     )
     fig_bar.update_traces(hovertemplate="<b>%{y}</b><br>%{x:.0f}", marker_line_width=0.5)
     fig_bar.update_layout(margin=dict(l=0, r=10, t=6, b=6), height=520)
