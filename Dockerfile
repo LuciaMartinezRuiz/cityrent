@@ -10,7 +10,6 @@ COPY . .
 ENV PYTHONUNBUFFERED=1
 
 # Por defecto, producción con Gunicorn (Render).
-# Si quieres forzar modo dev dentro del contenedor: docker run -e DEV=1 ...
 CMD sh -c 'if [ "$DEV" = "1" ]; then \
               python app/app.py; \
             else \
