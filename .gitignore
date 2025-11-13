@@ -16,12 +16,15 @@ dist/
 .idea/
 
 # Data
+# Data
 data/raw/*
 !data/raw/.gitkeep
+
+# Ignora todo en processed pero permite los .parquet (y .gitkeep)
 data/processed/*
+!data/processed/*.parquet
 !data/processed/.gitkeep
-models/artifacts/*
-!models/artifacts/.gitkeep
+
 
 # OS
 .DS_Store
