@@ -1,80 +1,119 @@
-# CityRent – Airbnb Prices and Urban Safety
+# CityRent — Airbnb Prices & Urban Safety (Madrid)
 
-## Project Title
-CityRent
+CityRent is an interactive **Dash** web app to explore short-term rental prices (Airbnb) together with urban safety indicators by **district** and **neighbourhood (barrio)** in Madrid. It unifies listings data with municipal security stats so you can visualize spatial patterns, compare areas, and see how safety relates to nightly price.
 
-## Short Description of the Problem
-Access to housing and the variability of short-term rental (Airbnb) prices across neighborhoods and cities create uncertainty for residents, visitors, and local authorities. Today, information is scattered across multiple sources and rarely allows joint analysis of lodging price with safety or socioeconomic indicators. CityRent proposes an interactive web application that unifies these sources to explore patterns, compare areas, and understand which factors are associated with nightly price.
+---
 
-## Main Objectives
-1. Visualize average prices and distribution of short-term rentals by city and neighborhood with interactive maps and charts.  
-2. Integrate housing (Airbnb) data with crime and socioeconomic variables (e.g., income, density) for combined analysis.  
-3. Model relationships using multiple regression and provide basic explainability of variables.  
-4. Deploy a stable public URL with CI/CD and maintain continuous improvements throughout the semester.
+## Live Demo
+> Deploy URL (Render): `https://cityrent.onrender.com`  
 
-## Initial Work Plan (phases & tasks)
-### Phase 1 – Repo & Base Deployment (Week 0–1)
-Create the `cityrent` repository, multi-page Dash skeleton, basic styling, and “Hello CityRent” deployment.
+---
 
-### Phase 2 – Data & Geometries (Week 1–3)
-Ingest and clean Inside Airbnb (listings) plus crime indices and socioeconomic variables (INE/municipal portals). Prepare GeoJSON for neighborhoods/cities.
+## Key Features
 
-### Phase 3 – Core Visualizations (Week 3–4)
-Neighborhood/city choropleth map, price histograms/boxplots, and a filterable property table.
+- **Barrios explorer** (`/neighbourhoods`)
+  - Map of listings filtered by barrio, room type, and price range.
+  - Room-type composition donut.
+  - **Safety score bar** (0–100) for the barrio’s **district**, with a red→yellow→green gradient and moving marker.
+  - “Similar barrios” chart based on cosine similarity of price stats.
 
-### Phase 4 – Modeling & Relations (Week 4–6)
-Multiple regression (scikit-learn) with metrics (R², MAE) and variable-importance visualization. “Relations” view (scatter plus fitted line).
+- **Relations** (`/relations`)
+  - **Scatter**: median nightly price (Y) vs **mean annual** security actions (X) by district.
+  - **OLS regression line**:
+    - Multivariate if data coverage allows (rates per 1,000, area shares, and listing features).
+    - Falls back to simple OLS on `actions_total` when needed.
+  - R² and MAE metrics.
 
-### Phase 5 – UX & Utility (Week 6–7)
-Advanced filters (price range, listing type, bedrooms, rating), CSV downloads, and a “Methodology & Data” page.
+- **Methodology** (`/about`)
+  - Data sources and modeling notes.
 
-### Phase 6 – Quality & Performance (Week 7–8)
-Basic tests, cached queries/pre-aggregations, and CI/CD automation (GitHub Actions).
+- **Multipage app** with a top navbar (Dash + `dash-bootstrap-components`).
 
-## Planned Data Sources (non-exhaustive)
-- Inside Airbnb (listings and coordinates by city)  
-- Municipal open data portals (crime by district/neighborhood)  
-- INE / Eurostat (socioeconomic variables)
+---
 
-## Repository Structure
+## Data Inputs (required files)
+
+Place these files in **`data/processed/`** at the **repo root**:
+
+- `madrid_listings.parquet`
+- `madrid_security_district_annual.parquet`
+- `madrid_barrio_to_district.parquet`
+
+### Expected columns (minimum)
+
+**Listings (`madrid_listings.parquet`)**
+- `id`, `price`, `latitude`, `longitude`
+- `room_type` (e.g., *Entire home/apt*, *Private room*…)
+- Recommended (if available): `minimum_nights`, `number_of_reviews`, `availability_365`
+- Neighbourhood field: one of `neigh`, `neighbourhood_cleansed`, or `neighbourhood`
+
+**Security (`madrid_security_district_annual.parquet`)**
+- `district_name`, `year`, *(optional)* `population`
+- Either:
+  - **Rates per 1,000**: `seg_ciud_rate_1000`, `seg_vial_rate_1000`, `conviv_rate_1000`, `otras_rate_1000`, `rate_per_1000`
+  - **Totals**: `seg_ciud_total`, `seg_vial_total`, `conviv_total`, `otras_total`, `actions_total`  
+  *(If `actions_total` is missing, the app sums available numeric columns as a fallback.)*
+
+**Barrio→District mapping (`madrid_barrio_to_district.parquet`)**
+- A barrio name column (e.g., `neigh_n`, `neigh_name_official`, or `NOMBRE`)
+- `district_name`
+
+> The app auto-normalizes names (accents, hyphens, case) for robust joins.
+
+---
+
+## How the Safety Score Works (0–100)
+
+For the barrio’s **district**:
+1. Aggregate **security by district across all years** (mean).
+2. Prefer **`rate_per_1000`** if ≥60% of districts have it; otherwise use **`actions_total`**.
+3. Rank the district among all districts (lower rate/total ⇒ **safer**).  
+   Score = `100 * (1 - rank_position / (N-1))`.  
+   - `0` (worst), `50` (median), `100` (best/lowest rate or actions).
+
+The colored bar shows the score with a **red → yellow → green** gradient and a marker at the score value.
+
+---
+
+## Project Structure (key files)
 ```
 cityrent/
   app/
-    pages/
-      home.py            # city map
-      neighborhoods.py   # neighborhood details + property list
-      relations.py       # regression & correlations
-      about.py           # methodology & sources
-    app.py               # entry point
-    __init__.py
-  assets/
-    styles.css
+  pages/
+  home.py
+  neighbourhoods.py
+  relations.py
+  about.py
+  app.py
   data/
-    raw/                 # original CSVs
-    processed/           # cleaned parquet/CSV
-  models/
-    train_regression.py
-    artifacts/
-  geo/
-    cities.geojson
-    neighborhoods.geojson
-  tests/
-    test_smoke.py
+  processed/
+  madrid_listings.parquet
+  madrid_security_district_annual.parquet
+  madrid_barrio_to_district.parquet
   requirements.txt
   Dockerfile
-  .gitignore
-  LICENSE
   README.md
 ```
 
-## How to Run Locally
+---
+
+## Run Locally
+
+**Prerequisites**: Python 3.11
+
 ```bash
+# 1) Create and activate a venv (optional but recommended)
+python -m venv .venv
+source .venv/bin/activate    # Windows: .venv\Scripts\activate
+
+# 2) Install deps
 pip install -r requirements.txt
+
+# 3) Ensure data files exist:
+#    data/processed/madrid_listings.parquet
+#    data/processed/madrid_security_district_annual.parquet
+#    data/processed/madrid_barrio_to_district.parquet
+
+# 4) Run
 python app/app.py
 # Open http://127.0.0.1:8050
-```
-
-## Deployment (suggested)
-- Render / Railway / Fly.io with Docker.  
-- Environment variables for API keys if applicable.  
-- CI/CD via GitHub Actions (auto build and deploy on main).
